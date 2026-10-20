@@ -30,6 +30,8 @@ button{font-family:inherit}
 #stage{flex:1;min-height:0;position:relative;background:#111}
 #map{position:absolute;inset:0}
 #video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;display:none;z-index:1100} /* above Leaflet controls (z 1000) */
+#vstats{position:absolute;left:6px;bottom:6px;right:6px;z-index:1200;display:none;color:#e8ecf3;
+  background:#000a;border-radius:6px;padding:3px 7px;font-size:11px;font-family:ui-monospace,Consolas,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #topbar{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--card);
   font-size:14px;font-weight:600}
 #dot{width:12px;height:12px;border-radius:50%;background:var(--muted);flex:none}
@@ -74,6 +76,7 @@ button{font-family:inherit}
   <div id="stage">
     <div id="map"></div>
     <video id="video" autoplay playsinline muted></video>
+    <div id="vstats"></div>
   </div>
   <div id="sheet">
     <div id="handle"></div>
@@ -378,7 +381,36 @@ function restartVideo(){
   const now=Date.now(); if(now-lastRestart<5000) return;   // no restart storms
   lastRestart=now; stopCamera(true); joinCamera();
 }
-function showVideo(on){ el('video').style.display=on?'block':'none'; }
+function showVideo(on){ el('video').style.display=on?'block':'none'; el('vstats').style.display=on?'block':'none'; }
+
+// Live WebRTC numbers under the video: path, bitrate, fps, loss, RTT.
+let prevStats=null;
+async function pollStats(){
+  if(!pc || el('video').style.display==='none') { prevStats=null; return; }
+  let report; try{ report=await pc.getStats(); }catch(e){ return; }
+  let inb=null, pair=null;
+  report.forEach(s=>{
+    if(s.type==='inbound-rtp' && s.kind==='video') inb=s;
+    if(s.type==='candidate-pair' && s.state==='succeeded' && s.nominated) pair=s;
+  });
+  if(!inb) return;
+  const now=performance.now();
+  if(prevStats && prevStats.pc!==pc) prevStats=null;   // new connection: counters restart
+  if(prevStats){
+    const dt=(now-prevStats.t)/1000;
+    const dRecv=inb.packetsReceived-prevStats.recv, dLost=Math.max(0,(inb.packetsLost||0)-prevStats.lost);
+    const kbps=(inb.bytesReceived-prevStats.bytes)*8/1000/dt;
+    const fps=((inb.framesDecoded||0)-prevStats.frames)/dt;
+    const loss=(dRecv+dLost)>0 ? 100*dLost/(dRecv+dLost) : 0;
+    let path='?';
+    if(pair){ const l=report.get(pair.localCandidateId), r=report.get(pair.remoteCandidateId);
+      path=(l&&l.candidateType==='relay')||(r&&r.candidateType==='relay') ? 'через TURN' : 'напрямую'; }
+    const rtt=pair&&pair.currentRoundTripTime!=null ? Math.round(pair.currentRoundTripTime*1000)+' мс' : '—';
+    el('vstats').textContent=path+' · '+kbps.toFixed(0)+' кбит/с · '+fps.toFixed(0)+' к/с · потери '+loss.toFixed(0)+'% · RTT '+rtt;
+  }
+  prevStats={pc,t:now,recv:inb.packetsReceived,lost:inb.packetsLost||0,bytes:inb.bytesReceived,frames:inb.framesDecoded||0};
+}
+setInterval(pollStats,2000);
 
 // ---- UI ------------------------------------------------------------------------
 let map, marker, track=[], poly, follow=true, voiceOn=true;
