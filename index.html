@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>DroneMesh</title>
+<style>
+/* Leaflet 1.9.4 */
+.leaflet-image-layer,.leaflet-layer,.leaflet-marker-icon,.leaflet-marker-shadow,.leaflet-pane,.leaflet-pane>canvas,.leaflet-pane>svg,.leaflet-tile,.leaflet-tile-container,.leaflet-zoom-box{position:absolute;left:0;top:0}.leaflet-container{overflow:hidden}.leaflet-marker-icon,.leaflet-marker-shadow,.leaflet-tile{-webkit-user-select:none;-moz-user-select:none;user-select:none;-webkit-user-drag:none}.leaflet-tile::selection{background:0 0}.leaflet-safari .leaflet-tile{image-rendering:-webkit-optimize-contrast}.leaflet-safari .leaflet-tile-container{width:1600px;height:1600px;-webkit-transform-origin:0 0}.leaflet-marker-icon,.leaflet-marker-shadow{display:block}.leaflet-container .leaflet-overlay-pane svg{max-width:none!important;max-height:none!important}.leaflet-container .leaflet-marker-pane img,.leaflet-container .leaflet-shadow-pane img,.leaflet-container .leaflet-tile,.leaflet-container .leaflet-tile-pane img,.leaflet-container img.leaflet-image-layer{max-width:none!important;max-height:none!important;width:auto;padding:0}.leaflet-container img.leaflet-tile{mix-blend-mode:plus-lighter}.leaflet-container.leaflet-touch-zoom{-ms-touch-action:pan-x pan-y;touch-action:pan-x pan-y}.leaflet-container.leaflet-touch-drag{-ms-touch-action:pinch-zoom;touch-action:none;touch-action:pinch-zoom}.leaflet-container.leaflet-touch-drag.leaflet-touch-zoom{-ms-touch-action:none;touch-action:none}.leaflet-container{-webkit-tap-highlight-color:transparent}.leaflet-container a{-webkit-tap-highlight-color:rgba(51,181,229,.4)}.leaflet-tile{filter:inherit;visibility:hidden}.leaflet-tile-loaded{visibility:inherit}.leaflet-zoom-box{width:0;height:0;-moz-box-sizing:border-box;box-sizing:border-box;z-index:800}.leaflet-overlay-pane svg{-moz-user-select:none}.leaflet-pane{z-index:400}.leaflet-tile-pane{z-index:200}.leaflet-overlay-pane{z-index:400}.leaflet-shadow-pane{z-index:500}.leaflet-marker-pane{z-index:600}.leaflet-tooltip-pane{z-index:650}.leaflet-popup-pane{z-index:700}.leaflet-map-pane canvas{z-index:100}.leaflet-map-pane svg{z-index:200}.leaflet-vml-shape{width:1px;height:1px}.lvml{behavior:url(#default#VML);display:inline-block;position:absolute}.leaflet-control{position:relative;z-index:800;pointer-events:visiblePainted;pointer-events:auto}.leaflet-bottom,.leaflet-top{position:absolute;z-index:1000;pointer-events:none}.leaflet-top{top:0}.leaflet-right{right:0}.leaflet-bottom{bottom:0}.leaflet-left{left:0}.leaflet-control{float:left;clear:both}.leaflet-right .leaflet-control{float:right}.leaflet-top .leaflet-control{margin-top:10px}.leaflet-bottom .leaflet-control{margin-bottom:10px}.leaflet-left .leaflet-control{margin-left:10px}.leaflet-right .leaflet-control{margin-right:10px}.leaflet-fade-anim .leaflet-popup{opacity:0;-webkit-transition:opacity .2s linear;-moz-transition:opacity .2s linear;transition:opacity .2s linear}.leaflet-fade-anim .leaflet-map-pane .leaflet-popup{opacity:1}.leaflet-zoom-animated{-webkit-transform-origin:0 0;-ms-transform-origin:0 0;transform-origin:0 0}svg.leaflet-zoom-animated{will-change:transform}.leaflet-zoom-anim .leaflet-zoom-animated{-webkit-transition:-webkit-transform .25s cubic-bezier(0,0,.25,1);-moz-transition:-moz-transform .25s cubic-bezier(0,0,.25,1);transition:transform .25s cubic-bezier(0,0,.25,1)}.leaflet-pan-anim .leaflet-tile,.leaflet-zoom-anim .leaflet-tile{-webkit-transition:none;-moz-transition:none;transition:none}.leaflet-zoom-anim .leaflet-zoom-hide{visibility:hidden}.leaflet-interactive{cursor:pointer}.leaflet-grab{cursor:-webkit-grab;cursor:-moz-grab;cursor:grab}.leaflet-crosshair,.leaflet-crosshair .leaflet-interactive{cursor:crosshair}.leaflet-control,.leaflet-popup-pane{cursor:auto}.leaflet-dragging .leaflet-grab,.leaflet-dragging .leaflet-grab .leaflet-interactive,.leaflet-dragging .leaflet-marker-draggable{cursor:move;cursor:-webkit-grabbing;cursor:-moz-grabbing;cursor:grabbing}.leaflet-image-layer,.leaflet-marker-icon,.leaflet-marker-shadow,.leaflet-pane>svg path,.leaflet-tile-container{pointer-events:none}.leaflet-image-layer.leaflet-interactive,.leaflet-marker-icon.leaflet-interactive,.leaflet-pane>svg path.leaflet-interactive,svg.leaflet-image-layer.leaflet-interactive path{pointer-events:visiblePainted;pointer-events:auto}.leaflet-container{background:#ddd;outline-offset:1px}.leaflet-container a{color:#0078a8}.leaflet-zoom-box{border:2px dotted #38f;background:rgba(255,255,255,.5)}.leaflet-container{font-family:"Helvetica Neue",Arial,Helvetica,sans-serif;font-size:12px;font-size:.75rem;line-height:1.5}.leaflet-bar{box-shadow:0 1px 5px rgba(0,0,0,.65);border-radius:4px}.leaflet-bar a{background-color:#fff;border-bottom:1px solid #ccc;width:26px;height:26px;line-height:26px;display:block;text-align:center;text-decoration:none;color:#000}.leaflet-bar a,.leaflet-control-layers-toggle{background-position:50% 50%;background-repeat:no-repeat;display:block}.leaflet-bar a:focus,.leaflet-bar a:hover{background-color:#f4f4f4}.leaflet-bar a:first-child{border-top-left-radius:4px;border-top-right-radius:4px}.leaflet-bar a:last-child{border-bottom-left-radius:4px;border-bottom-right-radius:4px;border-bottom:none}.leaflet-bar a.leaflet-disabled{cursor:default;background-color:#f4f4f4;color:#bbb}.leaflet-touch .leaflet-bar a{width:30px;height:30px;line-height:30px}.leaflet-touch .leaflet-bar a:first-child{border-top-left-radius:2px;border-top-right-radius:2px}.leaflet-touch .leaflet-bar a:last-child{border-bottom-left-radius:2px;border-bottom-right-radius:2px}.leaflet-control-zoom-in,.leaflet-control-zoom-out{font:bold 18px 'Lucida Console',Monaco,monospace;text-indent:1px}.leaflet-touch .leaflet-control-zoom-in,.leaflet-touch .leaflet-control-zoom-out{font-size:22px}.leaflet-control-layers{box-shadow:0 1px 5px rgba(0,0,0,.4);background:#fff;border-radius:5px}.leaflet-control-layers-toggle{background-image:url(images/layers.png);width:36px;height:36px}.leaflet-retina .leaflet-control-layers-toggle{background-image:url(images/layers-2x.png);background-size:26px 26px}.leaflet-touch .leaflet-control-layers-toggle{width:44px;height:44px}.leaflet-control-layers .leaflet-control-layers-list,.leaflet-control-layers-expanded .leaflet-control-layers-toggle{display:none}.leaflet-control-layers-expanded .leaflet-control-layers-list{display:block;position:relative}.leaflet-control-layers-expanded{padding:6px 10px 6px 6px;color:#333;background:#fff}.leaflet-control-layers-scrollbar{overflow-y:scroll;overflow-x:hidden;padding-right:5px}.leaflet-control-layers-selector{margin-top:2px;position:relative;top:1px}.leaflet-control-layers label{display:block;font-size:13px;font-size:1.08333em}.leaflet-control-layers-separator{height:0;border-top:1px solid #ddd;margin:5px -10px 5px -6px}.leaflet-default-icon-path{background-image:url(images/marker-icon.png)}.leaflet-container .leaflet-control-attribution{background:#fff;background:rgba(255,255,255,.8);margin:0}.leaflet-control-attribution,.leaflet-control-scale-line{padding:0 5px;color:#333;line-height:1.4}.leaflet-control-attribution a{text-decoration:none}.leaflet-control-attribution a:focus,.leaflet-control-attribution a:hover{text-decoration:underline}.leaflet-attribution-flag{display:inline!important;vertical-align:baseline!important;width:1em;height:.6669em}.leaflet-left .leaflet-control-scale{margin-left:5px}.leaflet-bottom .leaflet-control-scale{margin-bottom:5px}.leaflet-control-scale-line{border:2px solid #777;border-top:none;line-height:1.1;padding:2px 5px 1px;white-space:nowrap;-moz-box-sizing:border-box;box-sizing:border-box;background:rgba(255,255,255,.8);text-shadow:1px 1px #fff}.leaflet-control-scale-line:not(:first-child){border-top:2px solid #777;border-bottom:none;margin-top:-2px}.leaflet-control-scale-line:not(:first-child):not(:last-child){border-bottom:2px solid #777}.leaflet-touch .leaflet-bar,.leaflet-touch .leaflet-control-attribution,.leaflet-touch .leaflet-control-layers{box-shadow:none}.leaflet-touch .leaflet-bar,.leaflet-touch .leaflet-control-layers{border:2px solid rgba(0,0,0,.2);background-clip:padding-box}.leaflet-popup{position:absolute;text-align:center;margin-bottom:20px}.leaflet-popup-content-wrapper{padding:1px;text-align:left;border-radius:12px}.leaflet-popup-content{margin:13px 24px 13px 20px;line-height:1.3;font-size:13px;font-size:1.08333em;min-height:1px}.leaflet-popup-content p{margin:17px 0;margin:1.3em 0}.leaflet-popup-tip-container{width:40px;height:20px;position:absolute;left:50%;margin-top:-1px;margin-left:-20px;overflow:hidden;pointer-events:none}.leaflet-popup-tip{width:17px;height:17px;padding:1px;margin:-10px auto 0;pointer-events:auto;-webkit-transform:rotate(45deg);-moz-transform:rotate(45deg);-ms-transform:rotate(45deg);transform:rotate(45deg)}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#fff;color:#333;box-shadow:0 3px 14px rgba(0,0,0,.4)}.leaflet-container a.leaflet-popup-close-button{position:absolute;top:0;right:0;border:none;text-align:center;width:24px;height:24px;font:16px/24px Tahoma,Verdana,sans-serif;color:#757575;text-decoration:none;background:0 0}.leaflet-container a.leaflet-popup-close-button:focus,.leaflet-container a.leaflet-popup-close-button:hover{color:#585858}.leaflet-popup-scrolled{overflow:auto}.leaflet-oldie .leaflet-popup-content-wrapper{-ms-zoom:1}.leaflet-oldie .leaflet-popup-tip{width:24px;margin:0 auto}.leaflet-oldie .leaflet-control-layers,.leaflet-oldie .leaflet-control-zoom,.leaflet-oldie .leaflet-popup-content-wrapper,.leaflet-oldie .leaflet-popup-tip{border:1px solid #999}.leaflet-div-icon{background:#fff;border:1px solid #666}.leaflet-tooltip{position:absolute;padding:6px;background-color:#fff;border:1px solid #fff;border-radius:3px;color:#222;white-space:nowrap;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;pointer-events:none;box-shadow:0 1px 3px rgba(0,0,0,.4)}.leaflet-tooltip.leaflet-interactive{cursor:pointer;pointer-events:auto}.leaflet-tooltip-bottom:before,.leaflet-tooltip-left:before,.leaflet-tooltip-right:before,.leaflet-tooltip-top:before{position:absolute;pointer-events:none;border:6px solid transparent;background:0 0;content:""}.leaflet-tooltip-bottom{margin-top:6px}.leaflet-tooltip-top{margin-top:-6px}.leaflet-tooltip-bottom:before,.leaflet-tooltip-top:before{left:50%;margin-left:-6px}.leaflet-tooltip-top:before{bottom:0;margin-bottom:-12px;border-top-color:#fff}.leaflet-tooltip-bottom:before{top:0;margin-top:-12px;margin-left:-6px;border-bottom-color:#fff}.leaflet-tooltip-left{margin-left:-6px}.leaflet-tooltip-right{margin-left:6px}.leaflet-tooltip-left:before,.leaflet-tooltip-right:before{top:50%;margin-top:-6px}.leaflet-tooltip-left:before{right:0;margin-right:-12px;border-left-color:#fff}.leaflet-tooltip-right:before{left:0;margin-left:-12px;border-right-color:#fff}@media print{.leaflet-control{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+:root{
+  --bg:#0f1115; --card:#1b1f27; --card2:#232833; --text:#e8ecf3; --muted:#9aa4b2;
+  --green:#34c759; --red:#ff453a; --blue:#0a84ff; --yellow:#ffd60a; --orange:#ff9f0a;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+  font-family:system-ui,"Segoe UI",Roboto,sans-serif;overscroll-behavior:none}
+button{font-family:inherit}
+#login{position:fixed;inset:0;display:flex;flex-direction:column;justify-content:center;
+  align-items:center;gap:14px;padding:24px 16px;z-index:50}
+#login h1{margin:0 0 6px;font-size:26px;letter-spacing:.5px}
+#login p{margin:0;color:var(--muted);font-size:14px;text-align:center;max-width:340px}
+#login input{width:100%;max-width:340px;padding:14px;border-radius:12px;border:1px solid #2c333f;
+  background:var(--card);color:var(--text);font-size:16px}
+#login button,.bigbtn{width:100%;max-width:340px;padding:15px;border-radius:12px;border:0;
+  background:var(--blue);color:#fff;font-size:17px;font-weight:700}
+#login .err{color:var(--red);font-size:14px;min-height:18px;text-align:center}
+#app{position:fixed;inset:0;display:none;flex-direction:column}
+#map{flex:1;min-height:0;background:#111}
+#topbar{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--card);
+  font-size:14px;font-weight:600}
+#dot{width:12px;height:12px;border-radius:50%;background:var(--muted);flex:none}
+#status{flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#topbar .icon{background:var(--card2);color:var(--text);border:0;border-radius:9px;
+  padding:8px 10px;font-size:15px}
+#sheet{background:var(--card);max-height:50vh;overflow-y:auto;
+  box-shadow:0 -6px 20px #0008;padding:8px 12px 16px}
+#tele{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin:6px 0 12px}
+.row .k{color:var(--muted);font-size:11px}
+.row .v{font-size:16px;font-weight:700}
+#cell{grid-column:1 / -1}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid button{padding:14px 8px;border-radius:11px;border:1px solid #2c333f;background:var(--card2);
+  color:var(--text);font-size:15px;font-weight:700}
+.grid button.red{color:var(--red)} .grid button.blue{color:var(--blue)} .grid button.green{color:var(--green)}
+.section{color:var(--muted);font-size:12px;margin:12px 2px 4px}
+#cal{color:var(--yellow);font-size:13px;font-weight:700;margin:6px 2px;min-height:16px}
+#handle{width:40px;height:4px;border-radius:2px;background:#3a414d;margin:2px auto 8px}
+.leaflet-container{background:#111}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <h1>DroneMesh</h1>
+  <p>Облачный пульт DroneEngage. Введите данные доступа (как в приложении).</p>
+  <input id="email" type="email" inputmode="email" autocomplete="username" placeholder="Login (e-mail)">
+  <input id="code" type="password" autocomplete="current-password" placeholder="Access Code">
+  <label style="color:var(--muted);font-size:13px"><input id="remember" type="checkbox" checked> Запомнить на телефоне</label>
+  <button id="connectBtn">Подключиться к облаку</button>
+  <button id="usbBtn" class="bigbtn" style="background:var(--card2);color:var(--text)">Радио по USB (OTG)</button>
+  <div class="err" id="loginErr"></div>
+</div>
+
+<div id="app">
+  <div id="topbar">
+    <span id="dot"></span>
+    <span id="status">Подключение…</span>
+    <button class="icon" id="usbBtn2" title="Радио по USB (OTG)">🔌</button>
+    <button class="icon" id="voiceBtn" title="Голос">🔊</button>
+    <button class="icon" id="exitBtn" title="Выход">⏻</button>
+  </div>
+  <div id="map"></div>
+  <div id="sheet">
+    <div id="handle"></div>
+    <div id="tele">
+      <div class="row"><div class="k">Режим</div><div class="v" id="t-mode">—</div></div>
+      <div class="row"><div class="k">Батарея</div><div class="v" id="t-batt">—</div></div>
+      <div class="row"><div class="k">Высота</div><div class="v" id="t-alt">—</div></div>
+      <div class="row"><div class="k">Скорость / курс</div><div class="v" id="t-spd">—</div></div>
+      <div class="row"><div class="k">GPS</div><div class="v" id="t-gps">—</div></div>
+      <div class="row"><div class="k">Координаты</div><div class="v" id="t-pos">—</div></div>
+      <div class="row" id="cell"><div class="k">4G вышка</div><div class="v" id="t-cell">—</div></div>
+    </div>
+    <div class="section">Управление</div>
+    <div class="grid">
+      <button class="red" data-act="arm">Взвести</button>
+      <button data-act="disarm">Снять</button>
+      <button class="blue" data-act="RTL">Домой (RTL)</button>
+      <button class="blue" data-act="LAND">Посадка</button>
+      <button data-act="LOIT">Удержание</button>
+      <button data-act="ALTH">Высота</button>
+    </div>
+    <div class="section">Перед взлётом</div>
+    <div class="grid">
+      <button class="green" data-act="magcal">Калибровка компаса</button>
+      <button data-act="magcancel">Отмена калибровки</button>
+      <button class="red" data-act="reboot" style="grid-column:1 / -1">Перезагрузка полётника</button>
+    </div>
+    <div id="cal"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+"use strict";
+window.addEventListener('error', e => { try{
+  document.getElementById('status').textContent = 'Ошибка: ' + (e.message||e);
+  document.getElementById('dot').style.background = 'var(--red)'; }catch(_){} });
+const AUTH_URL = "https://cloud.ardupilot.org:19408/w/wl/";
+const PARTY = "MP_WEB_" + (Date.now()%100000) + "_" + Math.floor(Math.random()*1000);
+
+// ---- MAVLink: modes, message ids, commands ------------------------------------
+const COPTER_MODES = {0:"STAB",1:"ACRO",2:"ALTH",3:"AUTO",4:"GUID",5:"LOIT",6:"RTL",
+  7:"CIRC",9:"LAND",11:"DRFT",13:"SPRT",14:"FLIP",15:"ATUN",16:"POSH",17:"BRAK",
+  18:"THRW",20:"GNGP",21:"SRTL",22:"FHLD",23:"FOLL",24:"ZIGZ",25:"SYSI",26:"AUTR",27:"ARTL"};
+const MODE_RU = {STAB:"стабилизация",ACRO:"акро",ALTH:"удержание высоты",AUTO:"авто",
+  GUID:"управляемый",LOIT:"удержание позиции",RTL:"возврат домой",CIRC:"круг",LAND:"посадка",
+  POSH:"удержание позиции",BRAK:"торможение",SRTL:"умный возврат",ALTHOLD:"удержание высоты"};
+const MODE_NUM = {LOIT:5,RTL:6,LAND:9,ALTH:2,GUID:4,STAB:0};
+const MAG_CAL = {0:"не начата",1:"ожидание",2:"вращайте дрон (шаг 1)",3:"вращайте дрон (шаг 2)",
+  4:"успех",5:"ошибка",6:"неверная ориентация",7:"мало данных"};
+const ARMED_FLAG=128, CRC_EXTRA={76:152,11:89};
+const ARM_DISARM=400, REBOOT=246, START_MAG=42424, CANCEL_MAG=42426;
+
+function mavCrc(bytes, extra){
+  let crc=0xFFFF;
+  const acc=b=>{let t=b^(crc&0xFF);t=(t^(t<<4))&0xFF;crc=((crc>>8)^(t<<8)^(t<<3)^(t>>4))&0xFFFF;};
+  for(const b of bytes) acc(b); acc(extra); return crc;
+}
+let txSeq=0;
+function frame(msgid, payload){
+  txSeq=(txSeq+1)&0xFF;
+  const hdr=[0xFD,payload.length,0,0,txSeq,255,190,msgid&0xFF,(msgid>>8)&0xFF,(msgid>>16)&0xFF];
+  const body=hdr.concat(Array.from(payload));
+  const crc=mavCrc(body.slice(1), CRC_EXTRA[msgid]);
+  body.push(crc&0xFF, crc>>8);
+  return new Uint8Array(body);
+}
+function f32(v){const b=new Uint8Array(4);new DataView(b.buffer).setFloat32(0,v,true);return b;}
+function commandLong(target, cmd, p1=0,p2=0,p3=0,p4=0,p5=0,p6=0,p7=0){
+  const buf=new Uint8Array(33); const dv=new DataView(buf.buffer);
+  [p1,p2,p3,p4,p5,p6,p7].forEach((p,i)=>dv.setFloat32(i*4,p,true));
+  dv.setUint16(28,cmd,true); buf[30]=target; buf[31]=1; buf[32]=0;
+  return frame(76, buf);
+}
+function setMode(target, custom){
+  const buf=new Uint8Array(6); const dv=new DataView(buf.buffer);
+  dv.setUint32(0,custom,true); buf[4]=target; buf[5]=1; // CUSTOM_MODE_ENABLED
+  return frame(11, buf);
+}
+
+// ---- MAVLink parser (subset) --------------------------------------------------
+const S = { frames:0, lastAt:0, teleAt:0, mode:null, armed:null, volt:null, cur:null,
+  pct:null, alt:null, vspeed:null, gspeed:null, heading:null, fix:null, sats:null,
+  lat:null, lon:null, posAt:0, roll:null, pitch:null, yaw:null, sysid:null,
+  cell:{enb:null,sec:null,tac:null,rsrp:null,at:0}, magStatus:null, magPct:null, magReport:null, magAt:0,
+  statusText:null, statusSev:null, statusSeq:0 };
+let rxBuf=new Uint8Array(0);
+function feed(bytes){
+  const merged=new Uint8Array(rxBuf.length+bytes.length); merged.set(rxBuf); merged.set(bytes,rxBuf.length);
+  rxBuf=merged;
+  let i=0;
+  while(true){
+    while(i<rxBuf.length && rxBuf[i]!==0xFD && rxBuf[i]!==0xFE) i++;
+    if(i>=rxBuf.length){ rxBuf=new Uint8Array(0); break; }
+    if(rxBuf.length-i<3) { rxBuf=rxBuf.slice(i); break; }
+    let total, msgid, poff, plen, sysid, compid;
+    if(rxBuf[i]===0xFD){
+      plen=rxBuf[i+1]; const incompat=rxBuf[i+2];
+      total=12+plen+((incompat&0x01)?13:0);
+      if(rxBuf.length-i<total){ rxBuf=rxBuf.slice(i); break; }
+      sysid=rxBuf[i+5]; compid=rxBuf[i+6];
+      msgid=rxBuf[i+7]|(rxBuf[i+8]<<8)|(rxBuf[i+9]<<16); poff=i+10;
+    } else {
+      plen=rxBuf[i+1]; total=8+plen;
+      if(rxBuf.length-i<total){ rxBuf=rxBuf.slice(i); break; }
+      sysid=rxBuf[i+3]; compid=rxBuf[i+4]; msgid=rxBuf[i+5]; poff=i+6;
+    }
+    handle(msgid, rxBuf.subarray(poff, poff+plen), sysid, compid);
+    i+=total;
+  }
+}
+function pad(a,n){ if(a.length>=n) return a; const b=new Uint8Array(n); b.set(a); return b; }
+function handle(msgid, p, sysid, compid){
+  const now=Date.now()/1000; S.frames++; S.lastAt=now;
+  const dv=new DataView(p.buffer, p.byteOffset, p.byteLength);
+  const g=(o,t)=>{const q=pad(p,o+8); const d=new DataView(q.buffer,q.byteOffset); return t(d,o);};
+  if(msgid===0 && compid===1){
+    const q=pad(p,9); const d=new DataView(q.buffer,q.byteOffset);
+    const custom=d.getUint32(0,true), base=q[6];
+    S.teleAt=now; S.sysid=sysid; S.mode=COPTER_MODES[custom]||("M"+custom); S.armed=!!(base&ARMED_FLAG);
+  } else if(msgid===1){
+    const q=pad(p,31); const d=new DataView(q.buffer,q.byteOffset);
+    const v=d.getUint16(14,true), c=d.getInt16(16,true), pc=d.getInt8(30);
+    S.volt=(v&&v!==0xFFFF)?v/1000:null; S.cur=(c!==-1)?c/100:null; S.pct=(pc>=0&&pc<=100)?pc:null;
+  } else if(msgid===24){
+    const q=pad(p,30); S.fix=q[28]; S.sats=q[29]===255?null:q[29];
+  } else if(msgid===33){
+    const q=pad(p,28); const d=new DataView(q.buffer,q.byteOffset);
+    S.lat=d.getInt32(4,true)/1e7; S.lon=d.getInt32(8,true)/1e7; S.alt=d.getInt32(16,true)/1000; S.posAt=now;
+  } else if(msgid===74){
+    const q=pad(p,20); const d=new DataView(q.buffer,q.byteOffset);
+    S.gspeed=d.getFloat32(4,true); S.vspeed=d.getFloat32(12,true); S.heading=d.getInt16(16,true);
+  } else if(msgid===30){
+    const q=pad(p,28); const d=new DataView(q.buffer,q.byteOffset);
+    S.roll=d.getFloat32(4,true); S.pitch=d.getFloat32(8,true); S.yaw=d.getFloat32(12,true);
+  } else if(msgid===191){
+    const q=pad(p,27); S.magStatus=q[14]; S.magPct=q[16]; S.magReport=null; S.magAt=now;
+  } else if(msgid===192){
+    const q=pad(p,44); S.magStatus=q[42]; S.magReport=[q[42],q[43]]; S.magAt=now;
+  } else if(msgid===252){
+    const q=pad(p,18); const d=new DataView(q.buffer,q.byteOffset);
+    const val=d.getInt32(4,true);
+    let name=""; for(let k=8;k<18 && q[k];k++) name+=String.fromCharCode(q[k]);
+    if(name==="CELL_ENB") S.cell.enb=val; else if(name==="CELL_SEC") S.cell.sec=val;
+    else if(name==="CELL_TAC") S.cell.tac=val; else if(name==="CELL_RSRP") S.cell.rsrp=val;
+    if(name.startsWith("CELL_")) S.cell.at=now;
+  } else if(msgid===253){
+    const q=pad(p,52); let t=""; for(let k=1;k<51 && q[k];k++) t+=String.fromCharCode(q[k]);
+    if(t){ S.statusText=t; S.statusSev=q[0]; S.statusSeq++; }
+  }
+}
+
+// ---- Cloud WebSocket client ---------------------------------------------------
+let ws=null, unitId=null, unitName=null, units={}, idTimer=0, wantConnected=false;
+const enc=new TextEncoder(), dec=new TextDecoder();
+function envelope(ty, mt, ms, tg){ const m={ty,sd:PARTY,st:"w",mt,ms}; if(tg!=null) m.tg=tg; return m; }
+function sendText(obj){ if(ws&&ws.readyState===1) ws.send(JSON.stringify(obj)); }
+function sendMavlink(bytes){
+  if(!ws||ws.readyState!==1||unitId==null) return false;
+  const hdr=enc.encode(JSON.stringify(envelope("i",6502,{},unitId))+"\0");
+  const out=new Uint8Array(hdr.length+bytes.length); out.set(hdr); out.set(bytes,hdr.length);
+  ws.send(out); return true;
+}
+async function login(email, code){
+  const r=await fetch(AUTH_URL,{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({acc:email,pwd:code,gr:"1",app:"de",ver:"1",ex:"DRONE ENGAGE Web Client",at:"g"})});
+  const j=await r.json();
+  if(j.e!==0) throw new Error(j.em||("код "+j.e));
+  return {host:j.cs.g, port:parseInt(j.cs.h), key:j.cs.f};
+}
+async function connect(email, code){
+  wantConnected=true;
+  try{
+    setStatus("yellow","Вход в облако…");
+    const {host,port,key}=await login(email,code);
+    setStatus("yellow","Подключение к "+host+"…");
+    ws=new WebSocket("wss://"+host+":"+port); ws.binaryType="arraybuffer";
+    ws.onopen=()=>{ unitId=null; units={};
+      sendText({ty:"s",mt:"de_auth",f:key,s:PARTY,at:"g"}); };
+    ws.onmessage=onMessage;
+    ws.onclose=()=>{ clearInterval(idTimer); if(wantConnected){ setStatus("red","Связь потеряна, переподключение…"); setTimeout(()=>connect(email,code),3000);} };
+    ws.onerror=()=>{};
+  }catch(e){ setStatus("red","Ошибка входа: "+e.message); if(wantConnected) setTimeout(()=>connect(email,code),5000); }
+}
+function onMessage(ev){
+  if(typeof ev.data==="string"){
+    let m; try{m=JSON.parse(ev.data);}catch(e){return;}
+    if(m.mt==="de_auth_ack"){
+      if(m.r!=="ok"){ setStatus("red","Облако отклонило сессию"); return; }
+      setStatus("green","Облако подключено, ищу дрон…");
+      sendId(); requestIds();
+      clearInterval(idTimer);
+      idTimer=setInterval(()=>{ sendId(); if(unitId==null) requestIds(); }, 10000);
+    } else if(m.mt===1004){
+      if(m.ms&&m.ms.GS!==true){ units[m.sd]=String(m.ms.UD||""); }
+    }
+    return;
+  }
+  const u=new Uint8Array(ev.data); const z=u.indexOf(0); if(z<0) return;
+  let hdr; try{hdr=JSON.parse(dec.decode(u.subarray(0,z)));}catch(e){return;}
+  if(hdr.mt!==6502) return;
+  if(unitId==null){
+    const name=units[hdr.sd]; if(name==null) return;
+    unitId=hdr.sd; unitName=name; setStatus("green",name+" — на связи");
+  }
+  if(hdr.sd!==unitId) return;
+  feed(u.subarray(z+1));
+}
+function sendId(){ sendText(envelope("g",1004,{VT:999,GS:true,VR:0,SD:false,UD:PARTY,DS:"DroneMesh web",p:""})); }
+function requestIds(){ sendText(envelope("g",1005,{C:1004})); }
+
+// ---- UI ------------------------------------------------------------------------
+let map, marker, track=[], poly, follow=true, voiceOn=true;
+function initMap(){
+  map=L.map('map',{zoomControl:true,attributionControl:false}).setView([40.1792,44.4991],12);
+  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+    {maxZoom:19,attribution:"© Esri"}).addTo(map);
+  map.on('dragstart',()=>{follow=false;});
+}
+function setStatus(color,text){
+  document.getElementById('status').textContent=text;
+  const c={green:'var(--green)',yellow:'var(--yellow)',red:'var(--red)',muted:'var(--muted)'}[color]||'var(--muted)';
+  document.getElementById('dot').style.background=c;
+}
+const el=id=>document.getElementById(id);
+function fmt(v,suf,dig){ return v==null?"—":(dig!=null?v.toFixed(dig):v)+(suf||""); }
+function render(){
+  const now=Date.now()/1000;
+  el('t-mode').textContent=(S.mode?(MODE_RU[S.mode]||S.mode):"—")+(S.armed?" · взведён":(S.armed===false?" · снят":""));
+  el('t-mode').style.color=S.armed?'var(--red)':'var(--text)';
+  el('t-batt').textContent=[fmt(S.volt,"В",1),fmt(S.cur,"А",1),fmt(S.pct,"%",0)].filter(x=>x!=="—").join(" · ")||"—";
+  el('t-alt').textContent=fmt(S.alt,"м",1)+"  ↕ "+(S.vspeed==null?"—":(S.vspeed>=0?"+":"")+S.vspeed.toFixed(1));
+  el('t-spd').textContent=fmt(S.gspeed,"м/с",1)+"  "+fmt(S.heading,"°",0);
+  const fx={0:"нет GPS",1:"нет фикса",2:"2D",3:"3D",4:"DGPS",5:"RTK",6:"RTK"}[S.fix]||"";
+  el('t-gps').textContent="спутн. "+fmt(S.sats,"",0)+"  "+fx;
+  const hasPos=S.lat!=null && !(S.lat===0&&S.lon===0) && now-S.posAt<10;
+  el('t-pos').textContent=hasPos?(S.lat.toFixed(6)+", "+S.lon.toFixed(6)):"нет координат";
+  // 4G
+  if(S.cell.enb!=null && now-S.cell.at<30){
+    el('t-cell').textContent="eNB "+S.cell.enb+(S.cell.sec!=null?(", сектор "+S.cell.sec):"")+" · "+fmt(S.cell.rsrp,"дБм",0);
+  } else el('t-cell').textContent="—";
+  // mag cal
+  const cal=el('cal');
+  if(S.magStatus!=null && now-S.magAt<60){
+    if(S.magReport){ const ok=S.magReport[0]===4;
+      cal.textContent="Компас: "+(ok?"успех — перезагрузите полётник":MAG_CAL[S.magReport[0]]);
+      cal.style.color=ok?'var(--green)':'var(--red)';
+    } else { cal.textContent="Компас: "+(MAG_CAL[S.magStatus]||"?")+" · "+(S.magPct||0)+"%"; cal.style.color='var(--yellow)'; }
+  } else cal.textContent="";
+  // map
+  if(hasPos){
+    const ll=[S.lat,S.lon];
+    if(!marker){ marker=L.circleMarker(ll,{radius:7,color:'#fff',weight:2,fillColor:'#ff453a',fillOpacity:1}).addTo(map); map.setView(ll,17); }
+    else marker.setLatLng(ll);
+    const last=track[track.length-1];
+    if(!last||last[0]!==ll[0]||last[1]!==ll[1]){ track.push(ll); if(track.length>3000)track.shift();
+      if(track.length>1){ if(!poly) poly=L.polyline(track,{color:'#ff453a',weight:3}).addTo(map); else poly.setLatLngs(track);} }
+    if(follow) map.setView(ll);
+  }
+  announce();
+}
+// voice
+let aMode=null,aArmed=null,aStep=null,aMag=null;
+const BAT=[50,30,20,10];
+function say(t){ if(!voiceOn||!('speechSynthesis'in window))return; const u=new SpeechSynthesisUtterance(t); u.lang='ru-RU'; speechSynthesis.speak(u); }
+function announce(){
+  const now=Date.now()/1000; if(now-S.teleAt>4) return;
+  if(S.mode&&S.mode!==aMode){ if(aMode!==null) say("Режим: "+(MODE_RU[S.mode]||S.mode)); aMode=S.mode; }
+  if(S.armed!=null&&S.armed!==aArmed){ if(aArmed!==null||S.armed) say(S.armed?"Моторы взведены":"Моторы выключены"); aArmed=S.armed; }
+  if(S.pct!=null){ const step=BAT.filter(x=>S.pct<=x).pop(); if(step!=null&&(aStep==null||step<aStep)){ say("Батарея "+S.pct+" процентов"); } aStep=step; }
+  if(S.magReport){ const k=S.magReport[0]+"|"+now.toFixed(0); if(k.split("|")[0]!==aMag){ aMag=k.split("|")[0]; say(S.magReport[0]===4?"Компас откалиброван":"Ошибка калибровки компаса"); } }
+}
+setInterval(render,500);
+
+// control actions
+const NAMES={RTL:"возврат домой",LAND:"посадку",LOIT:"удержание позиции",ALTH:"удержание высоты"};
+function act(a){
+  const t=S.sysid||1;
+  if(a==="arm"){ if(confirm("Взвести моторы? Дрон может начать вращать винты.")) send(commandLong(t,ARM_DISARM,1),"взвод"); }
+  else if(a==="disarm"){ if(confirm("Снять моторы?")) send(commandLong(t,ARM_DISARM,0),"снятие"); }
+  else if(a==="reboot"){ if(confirm("Перезагрузить полётник? Только на земле, моторы сняты.")) send(commandLong(t,REBOOT,1),"перезагрузка"); }
+  else if(a==="magcal"){ if(confirm("Начать калибровку компаса? После старта медленно вращайте дрон по всем осям до 100%.")) send(commandLong(t,START_MAG,0,1,1,0,0),"старт калибровки"); }
+  else if(a==="magcancel"){ send(commandLong(t,CANCEL_MAG,0),"отмена калибровки"); }
+  else if(MODE_NUM[a]!=null){ if(confirm("Включить "+(NAMES[a]||a)+"?")) send(setMode(t,MODE_NUM[a]),NAMES[a]||a); }
+}
+function send(bytes,what){ if(usb.active){ usbSend(bytes); return; } if(!sendMavlink(bytes)) alert("Нет связи с дроном."); }
+document.querySelectorAll('.grid button').forEach(b=>b.onclick=()=>act(b.dataset.act));
+
+// ---- USB radio modem via OTG (WebUSB, CP210x @ 460800) ------------------------
+const usb={device:null,epIn:1,epOut:1,iface:0,active:false,baud:460800};
+async function connectUSB(){
+  if(!('usb' in navigator)){ setStatus('red','WebUSB не поддерживается (нужен Chrome на Android, по https)'); return; }
+  try{
+    const dev=await navigator.usb.requestDevice({filters:[{vendorId:0x10C4}]}); // Silicon Labs CP210x
+    usb.device=dev; await dev.open();
+    if(dev.configuration===null) await dev.selectConfiguration(1);
+    const intf=dev.configuration.interfaces[0];
+    usb.iface=intf.interfaceNumber;
+    await dev.claimInterface(usb.iface);
+    const eps=intf.alternate.endpoints;
+    const ein=eps.find(e=>e.direction==='in'), eout=eps.find(e=>e.direction==='out');
+    usb.epIn=ein?ein.endpointNumber:1; usb.epOut=eout?eout.endpointNumber:1;
+    const vreq=(request,value,data)=>{ const s={requestType:'vendor',recipient:'interface',request,value,index:usb.iface};
+      return data?dev.controlTransferOut(s,data):dev.controlTransferOut(s); };
+    await vreq(0x00,0x0001);                                   // IFC_ENABLE
+    const b=new Uint8Array(4); new DataView(b.buffer).setUint32(0,usb.baud,true);
+    await vreq(0x1E,0x0000,b);                                 // SET_BAUDRATE
+    await vreq(0x03,0x0800);                                   // SET_LINE_CTL = 8N1
+    await vreq(0x07,0x0303);                                   // SET_MHS: DTR=1, RTS=1
+    usb.active=true; setStatus('green','USB-радио на связи ('+usb.baud+')');
+    usbRead();
+  }catch(e){ setStatus('red','USB: '+e.message); }
+}
+async function usbRead(){
+  while(usb.active && usb.device){
+    try{
+      const r=await usb.device.transferIn(usb.epIn, 512);
+      if(r.data && r.data.byteLength) feed(new Uint8Array(r.data.buffer, r.data.byteOffset, r.data.byteLength));
+    }catch(e){ usb.active=false; setStatus('red','USB-радио отключено'); break; }
+  }
+}
+async function usbSend(bytes){
+  if(!usb.active||!usb.device) return false;
+  try{ await usb.device.transferOut(usb.epOut, bytes); return true; }catch(e){ return false; }
+}
+if('usb' in navigator && navigator.usb.addEventListener)
+  navigator.usb.addEventListener('disconnect', ()=>{ if(usb.active){ usb.active=false; setStatus('red','USB-радио отключено'); } });
+
+// login/app wiring
+function openApp(){
+  el('login').style.display='none'; el('app').style.display='flex';
+  if(!map){ try{ initMap(); }catch(e){ setStatus('red','Карта не загрузилась: '+e.message); } }
+  setTimeout(()=>{ try{ map&&map.invalidateSize(); }catch(e){} },200);
+}
+function start(email,code,remember){
+  if(remember){ localStorage.setItem('de_email',email); localStorage.setItem('de_code',code); }
+  else { localStorage.removeItem('de_email'); localStorage.removeItem('de_code'); }
+  openApp();
+  connect(email,code);   // connect even if the map failed
+}
+el('connectBtn').onclick=()=>{
+  const email=el('email').value.trim(), code=el('code').value.trim();
+  if(!email||!code){ el('loginErr').textContent="Введите login и Access Code"; return; }
+  start(email,code,el('remember').checked);
+};
+el('usbBtn').onclick=()=>{ openApp(); connectUSB(); };
+el('usbBtn2').onclick=()=>connectUSB();
+el('voiceBtn').onclick=()=>{ voiceOn=!voiceOn; el('voiceBtn').textContent=voiceOn?'🔊':'🔇'; if(voiceOn) say("Голос включён"); };
+el('exitBtn').onclick=()=>{ wantConnected=false; if(ws)ws.close(); el('app').style.display='none'; el('login').style.display='flex'; };
+// prefill + follow re-enable on marker tap
+(function(){ const e=localStorage.getItem('de_email'), c=localStorage.getItem('de_code');
+  if(e) el('email').value=e; if(c) el('code').value=c; })();
+el('map').addEventListener('dblclick',()=>{follow=true;});
+</script>
+</body>
+</html>
