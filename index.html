@@ -302,7 +302,7 @@ function requestIds(){ sendText(envelope("g",1005,{C:1004})); }
 
 // ---- Camera video over WebRTC (same signalling as the WebClient) --------------
 const perms={};                       // unit id -> capability string
-let pc=null, camChannel=null, camUnit=null, videoWanted=false, candIn=0;
+let pc=null, camChannel=null, camUnit=null, videoWanted=false, candIn=0, iceTimer=null;
 const ICE=[{urls:"stun:stun.l.google.com:19302"},
            {urls:"stun:stun1.l.google.com:19302"},
            {urls:["turn:cloud.ardupilot.org:3478","turn:cloud.ardupilot.org:3478?transport=tcp"],
@@ -327,9 +327,15 @@ function onCameraList(sender, tracks){
   pc.onicecandidate=e=>{ if(e.candidate) signalSend({candidate:e.candidate.candidate,
     sdpMid:e.candidate.sdpMid, sdpMLineIndex:e.candidate.sdpMLineIndex}); };
   pc.oniceconnectionstatechange=()=>{ if(!pc) return; const s=pc.iceConnectionState;
+    clearTimeout(iceTimer);
     if(s==='connected'||s==='completed') setStatus('green',(unitName||'дрон')+' — видео идёт');
-    else if(s==='failed') setStatus('red','Видео: не удалось соединиться (ICE)');
-    else if(s==='disconnected') setStatus('yellow','Видео: связь прерывается…');
+    else if(s==='failed'){ setStatus('yellow','Видео: связь потеряна, переподключаю…'); restartVideo(); }
+    else if(s==='disconnected'){
+      // Packet loss (weak 4G): give WebRTC 8 s to recover by itself, then rejoin.
+      setStatus('yellow','Видео: связь прерывается…');
+      iceTimer=setTimeout(()=>{ if(pc && pc.iceConnectionState==='disconnected'){
+        setStatus('yellow','Видео: переподключаю…'); restartVideo(); } },8000);
+    }
     else if(s==='checking') setStatus('yellow','Видео: устанавливаю соединение…'); };
   signalSend({joinme:true});
 }
@@ -359,11 +365,19 @@ async function onSignal(sender, ms){
       catch(err){ /* ignore a single bad candidate */ }
       if(pc.iceConnectionState!=='connected' && pc.iceConnectionState!=='completed')
         setStatus('yellow','Видео: соединение… (ICE '+pc.iceConnectionState+', канд. '+candIn+')');
-    } else if(packet.hangup){ stopCamera(); }
+    } else if(packet.hangup){ stopCamera(true); }   // the 10 s timer rejoins while video is wanted
   }catch(e){ setStatus('red','Видео: '+e.message); }
 }
-function stopCamera(){ if(pc){ try{signalSend({hangup:true});}catch(e){} try{pc.close();}catch(e){} pc=null; }
-  const v=el('video'); v.srcObject=null; }
+// keepFrame: leave the last picture on screen while we reconnect.
+function stopCamera(keepFrame){ clearTimeout(iceTimer);
+  if(pc){ try{signalSend({hangup:true});}catch(e){} try{pc.close();}catch(e){} pc=null; }
+  if(!keepFrame){ const v=el('video'); v.srcObject=null; } }
+let lastRestart=0;
+function restartVideo(){
+  if(!videoWanted) return;
+  const now=Date.now(); if(now-lastRestart<5000) return;   // no restart storms
+  lastRestart=now; stopCamera(true); joinCamera();
+}
 function showVideo(on){ el('video').style.display=on?'block':'none'; }
 
 // ---- UI ------------------------------------------------------------------------
