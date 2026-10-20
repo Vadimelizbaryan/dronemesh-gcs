@@ -248,7 +248,7 @@ async function login(email, code){
   if(j.e!==0) throw new Error(j.em||("код "+j.e));
   return {host:j.cs.g, port:parseInt(j.cs.h), key:j.cs.f};
 }
-let connecting=false;
+let connecting=false, reconnects=0;
 async function connect(email, code){
   if(connecting) return;            // one login at a time (avoid request storms)
   connecting=true; wantConnected=true;
@@ -260,8 +260,11 @@ async function connect(email, code){
     ws.onopen=()=>{ unitId=null; units={};
       sendText({ty:"s",mt:"de_auth",f:key,s:PARTY,at:"g"}); };
     ws.onmessage=onMessage;
-    ws.onclose=()=>{ clearInterval(idTimer);
-      if(wantConnected){ setStatus("red","Связь потеряна, повтор через 10 с…"); setTimeout(()=>connect(email,code),10000);} };
+    ws.onclose=e=>{ clearInterval(idTimer); reconnects++;
+      if(wantConnected){
+        setStatus("red","Облако закрыло связь (код "+e.code+(e.reason?(": "+e.reason):"")+
+          ", раз "+reconnects+"), повтор через 10 с…");
+        setTimeout(()=>connect(email,code),10000);} };
     ws.onerror=()=>{};
     connecting=false;
   }catch(e){
@@ -275,7 +278,7 @@ function onMessage(ev){
   if(typeof ev.data==="string"){
     let m; try{m=JSON.parse(ev.data);}catch(e){return;}
     if(m.mt==="de_auth_ack"){
-      if(m.r!=="ok"){ setStatus("red","Облако отклонило сессию"); return; }
+      if(m.r!=="ok"){ setStatus("red","Облако отклонило сессию"+(m.em?(": "+m.em):"")); return; }
       setStatus("green","Облако подключено, ищу дрон…");
       sendId(); requestIds();
       clearInterval(idTimer);
