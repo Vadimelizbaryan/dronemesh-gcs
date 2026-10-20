@@ -368,7 +368,16 @@ async function onSignal(sender, ms){
       catch(err){ /* ignore a single bad candidate */ }
       if(pc.iceConnectionState!=='connected' && pc.iceConnectionState!=='completed')
         setStatus('yellow','Видео: соединение… (ICE '+pc.iceConnectionState+', канд. '+candIn+')');
-    } else if(packet.hangup){ stopCamera(true); }   // the 10 s timer rejoins while video is wanted
+    } else if(packet.hangup){
+      // The desktop bridge has priority on the camera: "busy" = our join was
+      // refused, "taken" = the desktop took it over. Wait; the 10 s timer re-asks.
+      if(packet.reason==='busy'||packet.reason==='taken'){
+        stopCamera(false); showVideo(false);
+        setStatus('yellow', packet.reason==='busy'
+          ? 'Камера занята: видео смотрит десктоп (Mission Planner). Жду…'
+          : 'Камеру забрал десктоп (Mission Planner). Жду…');
+      } else stopCamera(true);
+    }
   }catch(e){ setStatus('red','Видео: '+e.message); }
 }
 // keepFrame: leave the last picture on screen while we reconnect.
