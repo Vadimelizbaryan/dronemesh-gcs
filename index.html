@@ -251,6 +251,7 @@ async function login(email, code){
 let connecting=false, reconnects=0;
 async function connect(email, code){
   if(connecting) return;            // one login at a time (avoid request storms)
+  if(ws && ws.readyState<2) return; // already open or opening: no second socket
   connecting=true; wantConnected=true;
   try{
     setStatus("yellow","Вход в облако…");
@@ -483,8 +484,21 @@ async function usbSend(bytes){
 if('usb' in navigator && navigator.usb.addEventListener)
   navigator.usb.addEventListener('disconnect', ()=>{ if(usb.active){ usb.active=false; setStatus('red','USB-радио отключено'); } });
 
+// Keep the phone screen on while the pult is open: when the screen dims, Android
+// Chrome freezes the tab and drops its cloud connection.
+let wakeLock=null, lastLogin=null;
+async function keepAwake(){ try{ if('wakeLock' in navigator && !wakeLock){
+  wakeLock=await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release',()=>{ wakeLock=null; }); } }catch(e){} }
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState!=='visible') return;
+  keepAwake();
+  // Back on the tab with the cloud link gone: reconnect now instead of waiting.
+  if(lastLogin && wantConnected && (!ws || ws.readyState>1)) connect(lastLogin[0], lastLogin[1]);
+});
+
 // login/app wiring
 function openApp(){
+  keepAwake();
   el('login').style.display='none'; el('app').style.display='flex';
   if(!map){ try{ initMap(); }catch(e){ setStatus('red','Карта не загрузилась: '+e.message); } }
   setTimeout(()=>{ try{ map&&map.invalidateSize(); }catch(e){} },200);
@@ -493,6 +507,7 @@ function start(email,code,remember){
   if(remember){ localStorage.setItem('de_email',email); localStorage.setItem('de_code',code); }
   else { localStorage.removeItem('de_email'); localStorage.removeItem('de_code'); }
   openApp();
+  lastLogin=[email,code];
   connect(email,code);   // connect even if the map failed
 }
 el('connectBtn').onclick=()=>{
