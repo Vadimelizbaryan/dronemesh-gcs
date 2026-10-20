@@ -318,12 +318,19 @@ function onCameraList(sender, tracks){
   camChannel=String(tracks[0].id||"");
   pc=new RTCPeerConnection({iceServers:ICE});
   pc.ontrack=e=>{ const v=el('video'); if(v.srcObject!==e.streams[0]) v.srcObject=e.streams[0];
-    showVideo(true); setStatus('green',(unitName||'дрон')+' — видео идёт'); };
-  pc.onicecandidate=e=>{ if(e.candidate) signalSend({candidate:e.candidate.candidate,
-    sdpMid:e.candidate.sdpMid, sdpMLineIndex:e.candidate.sdpMLineIndex}); };
-  pc.onconnectionstatechange=()=>{ if(pc && (pc.connectionState==='failed'||pc.connectionState==='closed')) stopCamera(); };
+    if(v.play) v.play().catch(()=>{}); showVideo(true); setStatus('green',(unitName||'дрон')+' — видео идёт'); };
+  pc.onicecandidate=()=>{};   // our candidates go out embedded in the answer (see onSignal)
+  pc.oniceconnectionstatechange=()=>{ if(!pc) return; const s=pc.iceConnectionState;
+    if(s==='failed') setStatus('red','Видео: не удалось соединиться (ICE)');
+    else if(s==='checking') setStatus('yellow','Видео: устанавливаю соединение…'); };
   signalSend({joinme:true});
 }
+function iceComplete(p){ return new Promise(res=>{
+  if(p.iceGatheringState==='complete') return res();
+  const done=()=>{ if(p.iceGatheringState==='complete'){ clearTimeout(t); p.removeEventListener('icegatheringstatechange',done); res(); } };
+  const t=setTimeout(()=>{ p.removeEventListener('icegatheringstatechange',done); res(); },2500);
+  p.addEventListener('icegatheringstatechange',done);
+});}
 async function onSignal(sender, ms){
   if(!pc || sender!==camUnit) return;
   const sig=ms.w||ms;
@@ -333,6 +340,7 @@ async function onSignal(sender, ms){
     if(packet.type==="offer"){
       await pc.setRemoteDescription({type:"offer",sdp:packet.sdp});
       await pc.setLocalDescription(await pc.createAnswer());
+      await iceComplete(pc);     // like aiortc: send the answer with all candidates in it
       signalSend({type:"answer",sdp:pc.localDescription.sdp});
     } else if(packet.candidate){
       await pc.addIceCandidate({candidate:packet.candidate,
