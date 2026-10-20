@@ -330,7 +330,9 @@ function onCameraList(sender, tracks){
   pc.onicecandidate=e=>{ if(e.candidate) signalSend({candidate:e.candidate.candidate,
     sdpMid:e.candidate.sdpMid, sdpMLineIndex:e.candidate.sdpMLineIndex}); };
   pc.oniceconnectionstatechange=()=>{ if(!pc) return; const s=pc.iceConnectionState;
-    if(s==='failed') setStatus('red','Видео: не удалось соединиться (ICE)');
+    if(s==='connected'||s==='completed') setStatus('green',(unitName||'дрон')+' — видео идёт');
+    else if(s==='failed') setStatus('red','Видео: не удалось соединиться (ICE)');
+    else if(s==='disconnected') setStatus('yellow','Видео: связь прерывается…');
     else if(s==='checking') setStatus('yellow','Видео: устанавливаю соединение…'); };
   signalSend({joinme:true});
 }
