@@ -61,7 +61,6 @@ button{font-family:inherit}
   <input id="code" type="password" autocomplete="current-password" placeholder="Access Code">
   <label style="color:var(--muted);font-size:13px"><input id="remember" type="checkbox" checked> Запомнить на телефоне</label>
   <button id="connectBtn">Подключиться к облаку</button>
-  <button id="usbBtn" class="bigbtn" style="background:var(--card2);color:var(--text)">Радио по USB (OTG)</button>
   <div class="err" id="loginErr"></div>
 </div>
 
@@ -69,7 +68,6 @@ button{font-family:inherit}
   <div id="topbar">
     <span id="dot"></span>
     <span id="status">Подключение…</span>
-    <button class="icon" id="usbBtn2" title="Радио по USB (OTG)">🔌</button>
     <button class="icon" id="voiceBtn" title="Голос">🔊</button>
     <button class="icon" id="exitBtn" title="Выход">⏻</button>
   </div>
@@ -442,48 +440,8 @@ function act(a){
   else if(a==="magcancel"){ send(commandLong(t,CANCEL_MAG,0),"отмена калибровки"); }
   else if(MODE_NUM[a]!=null){ if(confirm("Включить "+(NAMES[a]||a)+"?")) send(setMode(t,MODE_NUM[a]),NAMES[a]||a); }
 }
-function send(bytes,what){ if(usb.active){ usbSend(bytes); return; } if(!sendMavlink(bytes)) alert("Нет связи с дроном."); }
+function send(bytes,what){ if(!sendMavlink(bytes)) alert("Нет связи с дроном через облако."); }
 document.querySelectorAll('.grid button').forEach(b=>b.onclick=()=>act(b.dataset.act));
-
-// ---- USB radio modem via OTG (WebUSB, CP210x @ 460800) ------------------------
-const usb={device:null,epIn:1,epOut:1,iface:0,active:false,baud:460800};
-async function connectUSB(){
-  if(!('usb' in navigator)){ setStatus('red','WebUSB не поддерживается (нужен Chrome на Android, по https)'); return; }
-  try{
-    const dev=await navigator.usb.requestDevice({filters:[{vendorId:0x10C4}]}); // Silicon Labs CP210x
-    usb.device=dev; await dev.open();
-    if(dev.configuration===null) await dev.selectConfiguration(1);
-    const intf=dev.configuration.interfaces[0];
-    usb.iface=intf.interfaceNumber;
-    await dev.claimInterface(usb.iface);
-    const eps=intf.alternate.endpoints;
-    const ein=eps.find(e=>e.direction==='in'), eout=eps.find(e=>e.direction==='out');
-    usb.epIn=ein?ein.endpointNumber:1; usb.epOut=eout?eout.endpointNumber:1;
-    const vreq=(request,value,data)=>{ const s={requestType:'vendor',recipient:'interface',request,value,index:usb.iface};
-      return data?dev.controlTransferOut(s,data):dev.controlTransferOut(s); };
-    await vreq(0x00,0x0001);                                   // IFC_ENABLE
-    const b=new Uint8Array(4); new DataView(b.buffer).setUint32(0,usb.baud,true);
-    await vreq(0x1E,0x0000,b);                                 // SET_BAUDRATE
-    await vreq(0x03,0x0800);                                   // SET_LINE_CTL = 8N1
-    await vreq(0x07,0x0303);                                   // SET_MHS: DTR=1, RTS=1
-    usb.active=true; setStatus('green','USB-радио на связи ('+usb.baud+')');
-    usbRead();
-  }catch(e){ setStatus('red','USB: '+e.message); }
-}
-async function usbRead(){
-  while(usb.active && usb.device){
-    try{
-      const r=await usb.device.transferIn(usb.epIn, 512);
-      if(r.data && r.data.byteLength) feed(new Uint8Array(r.data.buffer, r.data.byteOffset, r.data.byteLength));
-    }catch(e){ usb.active=false; setStatus('red','USB-радио отключено'); break; }
-  }
-}
-async function usbSend(bytes){
-  if(!usb.active||!usb.device) return false;
-  try{ await usb.device.transferOut(usb.epOut, bytes); return true; }catch(e){ return false; }
-}
-if('usb' in navigator && navigator.usb.addEventListener)
-  navigator.usb.addEventListener('disconnect', ()=>{ if(usb.active){ usb.active=false; setStatus('red','USB-радио отключено'); } });
 
 // Keep the phone screen on while the pult is open: when the screen dims, Android
 // Chrome freezes the tab and drops its cloud connection.
@@ -516,8 +474,6 @@ el('connectBtn').onclick=()=>{
   if(!email||!code){ el('loginErr').textContent="Введите login и Access Code"; return; }
   start(email,code,el('remember').checked);
 };
-el('usbBtn').onclick=()=>{ openApp(); connectUSB(); };
-el('usbBtn2').onclick=()=>connectUSB();
 function toggleVideo(){
   if(videoWanted){ videoWanted=false; stopCamera(); showVideo(false); setStatus('green',(unitName||'дрон')+' — на связи'); }
   else { videoWanted=true; joinCamera(); setStatus('yellow', videoUnit()?'Подключаю видео…':'Жду камеру дрона…'); }
