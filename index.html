@@ -25,7 +25,9 @@ button{font-family:inherit}
   background:var(--blue);color:#fff;font-size:17px;font-weight:700}
 #login .err{color:var(--red);font-size:14px;min-height:18px;text-align:center}
 #app{position:fixed;inset:0;display:none;flex-direction:column}
-#map{flex:1;min-height:0;background:#111}
+#stage{flex:1;min-height:0;position:relative;background:#111}
+#map{position:absolute;inset:0}
+#video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;display:none;z-index:400}
 #topbar{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--card);
   font-size:14px;font-weight:600}
 #dot{width:12px;height:12px;border-radius:50%;background:var(--muted);flex:none}
@@ -65,11 +67,15 @@ button{font-family:inherit}
   <div id="topbar">
     <span id="dot"></span>
     <span id="status">Подключение…</span>
+    <button class="icon" id="videoBtn" title="Видео с камеры">📹</button>
     <button class="icon" id="usbBtn2" title="Радио по USB (OTG)">🔌</button>
     <button class="icon" id="voiceBtn" title="Голос">🔊</button>
     <button class="icon" id="exitBtn" title="Выход">⏻</button>
   </div>
-  <div id="map"></div>
+  <div id="stage">
+    <div id="map"></div>
+    <video id="video" autoplay playsinline muted></video>
+  </div>
   <div id="sheet">
     <div id="handle"></div>
     <div id="tele">
@@ -270,10 +276,11 @@ function onMessage(ev){
       setStatus("green","Облако подключено, ищу дрон…");
       sendId(); requestIds();
       clearInterval(idTimer);
-      idTimer=setInterval(()=>{ sendId(); if(unitId==null) requestIds(); }, 10000);
+      idTimer=setInterval(()=>{ sendId(); if(unitId==null) requestIds(); if(videoWanted&&!pc) joinCamera(); }, 10000);
     } else if(m.mt===1004){
-      if(m.ms&&m.ms.GS!==true){ units[m.sd]=String(m.ms.UD||""); }
-    }
+      if(m.ms&&m.ms.GS!==true){ units[m.sd]=String(m.ms.UD||""); perms[m.sd]=String(m.ms.p||""); joinCamera(); }
+    } else if(m.mt===1012){ onCameraList(m.sd, (m.ms&&m.ms.T)||[]); }
+    else if(m.mt===1021){ onSignal(m.sd, m.ms||{}); }
     return;
   }
   const u=new Uint8Array(ev.data); const z=u.indexOf(0); if(z<0) return;
@@ -288,6 +295,51 @@ function onMessage(ev){
 }
 function sendId(){ sendText(envelope("g",1004,{VT:999,GS:true,VR:0,SD:false,UD:PARTY,DS:"DroneMesh web",p:""})); }
 function requestIds(){ sendText(envelope("g",1005,{C:1004})); }
+
+// ---- Camera video over WebRTC (same signalling as the WebClient) --------------
+const perms={};                       // unit id -> capability string
+let pc=null, camChannel=null, camUnit=null, videoWanted=false;
+const ICE=[{urls:"stun:stun1.l.google.com:19302"},
+           {urls:"turn:cloud.ardupilot.org:3478",username:"andruav_ap",credential:"1234"}];
+function hasVideo(p){ return typeof p==="string" && p.length>8 && p[8]==="V"; }
+function videoUnit(){ return Object.keys(perms).find(u=>hasVideo(perms[u])); }
+function signalSend(packet){ sendText(envelope("i",1021,{w:{channel:camChannel,packet}},camUnit)); }
+function joinCamera(){
+  if(pc || !videoWanted) return;
+  const u=videoUnit(); if(!u) return;         // no camera-capable unit announced yet
+  camUnit=u;
+  sendText(envelope("i",1005,{C:1012},camUnit)); // REMOTE_EXECUTE -> camera list
+}
+function onCameraList(sender, tracks){
+  if(pc || sender!==camUnit || !tracks || !tracks.length) return;
+  camChannel=String(tracks[0].id||"");
+  pc=new RTCPeerConnection({iceServers:ICE});
+  pc.ontrack=e=>{ const v=el('video'); if(v.srcObject!==e.streams[0]) v.srcObject=e.streams[0];
+    showVideo(true); setStatus('green',(unitName||'дрон')+' — видео идёт'); };
+  pc.onicecandidate=e=>{ if(e.candidate) signalSend({candidate:e.candidate.candidate,
+    sdpMid:e.candidate.sdpMid, sdpMLineIndex:e.candidate.sdpMLineIndex}); };
+  pc.onconnectionstatechange=()=>{ if(pc && (pc.connectionState==='failed'||pc.connectionState==='closed')) stopCamera(); };
+  signalSend({joinme:true});
+}
+async function onSignal(sender, ms){
+  if(!pc || sender!==camUnit) return;
+  const sig=ms.w||ms;
+  if(sig.channel!=null && String(sig.channel)!==camChannel) return;
+  const packet=sig.packet||{};
+  try{
+    if(packet.type==="offer"){
+      await pc.setRemoteDescription({type:"offer",sdp:packet.sdp});
+      await pc.setLocalDescription(await pc.createAnswer());
+      signalSend({type:"answer",sdp:pc.localDescription.sdp});
+    } else if(packet.candidate){
+      await pc.addIceCandidate({candidate:packet.candidate,
+        sdpMid:packet.sdpMid||"0", sdpMLineIndex:packet.sdpMLineIndex||0});
+    } else if(packet.hangup){ stopCamera(); }
+  }catch(e){ setStatus('red','Видео: '+e.message); }
+}
+function stopCamera(){ if(pc){ try{signalSend({hangup:true});}catch(e){} try{pc.close();}catch(e){} pc=null; }
+  const v=el('video'); v.srcObject=null; }
+function showVideo(on){ el('video').style.display=on?'block':'none'; }
 
 // ---- UI ------------------------------------------------------------------------
 let map, marker, track=[], poly, follow=true, voiceOn=true;
@@ -425,6 +477,10 @@ el('connectBtn').onclick=()=>{
 };
 el('usbBtn').onclick=()=>{ openApp(); connectUSB(); };
 el('usbBtn2').onclick=()=>connectUSB();
+el('videoBtn').onclick=()=>{
+  if(videoWanted){ videoWanted=false; stopCamera(); showVideo(false); setStatus('green',(unitName||'дрон')+' — на связи'); }
+  else { videoWanted=true; joinCamera(); setStatus('yellow', videoUnit()?'Подключаю видео…':'Жду камеру дрона…'); }
+};
 el('voiceBtn').onclick=()=>{ voiceOn=!voiceOn; el('voiceBtn').textContent=voiceOn?'🔊':'🔇'; if(voiceOn) say("Голос включён"); };
 el('exitBtn').onclick=()=>{ wantConnected=false; if(ws)ws.close(); el('app').style.display='none'; el('login').style.display='flex'; };
 // prefill + follow re-enable on marker tap
