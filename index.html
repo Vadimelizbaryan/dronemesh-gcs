@@ -301,7 +301,7 @@ function requestIds(){ sendText(envelope("g",1005,{C:1004})); }
 
 // ---- Camera video over WebRTC (same signalling as the WebClient) --------------
 const perms={};                       // unit id -> capability string
-let pc=null, camChannel=null, camUnit=null, videoWanted=false;
+let pc=null, camChannel=null, camUnit=null, videoWanted=false, candIn=0;
 const ICE=[{urls:"stun:stun1.l.google.com:19302"},
            {urls:"turn:cloud.ardupilot.org:3478",username:"andruav_ap",credential:"1234"}];
 function hasVideo(p){ return typeof p==="string" && p.length>8 && p[8]==="V"; }
@@ -315,7 +315,7 @@ function joinCamera(){
 }
 function onCameraList(sender, tracks){
   if(pc || sender!==camUnit || !tracks || !tracks.length) return;
-  camChannel=String(tracks[0].id||"");
+  camChannel=String(tracks[0].id||""); candIn=0;
   pc=new RTCPeerConnection({iceServers:ICE});
   pc.ontrack=e=>{ const v=el('video'); if(v.srcObject!==e.streams[0]) v.srcObject=e.streams[0];
     if(v.play) v.play().catch(()=>{}); showVideo(true); setStatus('green',(unitName||'дрон')+' — видео идёт'); };
@@ -343,8 +343,14 @@ async function onSignal(sender, ms){
       await iceComplete(pc);     // like aiortc: send the answer with all candidates in it
       signalSend({type:"answer",sdp:pc.localDescription.sdp});
     } else if(packet.candidate){
-      await pc.addIceCandidate({candidate:packet.candidate,
-        sdpMid:packet.sdpMid||"0", sdpMLineIndex:packet.sdpMLineIndex||0});
+      let c=String(packet.candidate).trim();
+      if(c.startsWith("a=")) c=c.slice(2);
+      if(c && !c.startsWith("candidate:")) c="candidate:"+c;   // browser wants the "candidate:" form
+      try{ await pc.addIceCandidate({candidate:c, sdpMid:packet.sdpMid||"0",
+        sdpMLineIndex:packet.sdpMLineIndex==null?0:packet.sdpMLineIndex}); candIn++; }
+      catch(err){ /* ignore a single bad candidate */ }
+      if(pc.iceConnectionState!=='connected' && pc.iceConnectionState!=='completed')
+        setStatus('yellow','Видео: соединение… (ICE '+pc.iceConnectionState+', канд. '+candIn+')');
     } else if(packet.hangup){ stopCamera(); }
   }catch(e){ setStatus('red','Видео: '+e.message); }
 }
