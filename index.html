@@ -29,7 +29,7 @@ button{font-family:inherit}
 #app{position:fixed;inset:0;display:none;flex-direction:column}
 #stage{flex:1;min-height:0;position:relative;background:#111}
 #map{position:absolute;inset:0}
-#video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;display:none;z-index:400}
+#video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;display:none;z-index:1100} /* above Leaflet controls (z 1000) */
 #topbar{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--card);
   font-size:14px;font-weight:600}
 #dot{width:12px;height:12px;border-radius:50%;background:var(--muted);flex:none}
@@ -69,7 +69,6 @@ button{font-family:inherit}
   <div id="topbar">
     <span id="dot"></span>
     <span id="status">Подключение…</span>
-    <button class="icon" id="videoBtn" title="Видео с камеры">📹</button>
     <button class="icon" id="usbBtn2" title="Радио по USB (OTG)">🔌</button>
     <button class="icon" id="voiceBtn" title="Голос">🔊</button>
     <button class="icon" id="exitBtn" title="Выход">⏻</button>
@@ -524,7 +523,6 @@ function toggleVideo(){
   else { videoWanted=true; joinCamera(); setStatus('yellow', videoUnit()?'Подключаю видео…':'Жду камеру дрона…'); }
   const b=el('videoBtn2'); if(b) b.textContent=videoWanted?'🗺️ Скрыть видео (карта)':'📹 Видео с камеры';
 }
-el('videoBtn').onclick=toggleVideo;
 el('videoBtn2').onclick=toggleVideo;
 el('voiceBtn').onclick=()=>{ voiceOn=!voiceOn; el('voiceBtn').textContent=voiceOn?'🔊':'🔇'; if(voiceOn) say("Голос включён"); };
 el('exitBtn').onclick=()=>{ wantConnected=false; if(ws)ws.close(); el('app').style.display='none'; el('login').style.display='flex'; };
