@@ -78,6 +78,7 @@ button{font-family:inherit}
   </div>
   <div id="sheet">
     <div id="handle"></div>
+    <button id="videoBtn2" class="bigbtn" style="max-width:none;margin:2px 0 10px;background:var(--card2);color:var(--text)">📹 Видео с камеры</button>
     <div id="tele">
       <div class="row"><div class="k">Режим</div><div class="v" id="t-mode">—</div></div>
       <div class="row"><div class="k">Батарея</div><div class="v" id="t-batt">—</div></div>
@@ -477,10 +478,13 @@ el('connectBtn').onclick=()=>{
 };
 el('usbBtn').onclick=()=>{ openApp(); connectUSB(); };
 el('usbBtn2').onclick=()=>connectUSB();
-el('videoBtn').onclick=()=>{
+function toggleVideo(){
   if(videoWanted){ videoWanted=false; stopCamera(); showVideo(false); setStatus('green',(unitName||'дрон')+' — на связи'); }
   else { videoWanted=true; joinCamera(); setStatus('yellow', videoUnit()?'Подключаю видео…':'Жду камеру дрона…'); }
-};
+  const b=el('videoBtn2'); if(b) b.textContent=videoWanted?'🗺️ Скрыть видео (карта)':'📹 Видео с камеры';
+}
+el('videoBtn').onclick=toggleVideo;
+el('videoBtn2').onclick=toggleVideo;
 el('voiceBtn').onclick=()=>{ voiceOn=!voiceOn; el('voiceBtn').textContent=voiceOn?'🔊':'🔇'; if(voiceOn) say("Голос включён"); };
 el('exitBtn').onclick=()=>{ wantConnected=false; if(ws)ws.close(); el('app').style.display='none'; el('login').style.display='flex'; };
 // prefill + follow re-enable on marker tap
